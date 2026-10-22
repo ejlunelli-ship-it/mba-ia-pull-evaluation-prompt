@@ -128,9 +128,27 @@ Os logs completos de cada execução ficam em `results/` (ignorado pelo git).
 
 Todos os experimentos e o tracing de cada exemplo podem ser abertos pelo [link público do dataset](https://smith.langchain.com/public/701114c4-0faa-469e-93b7-a3fc8f574542/d) (aba *Experiments*; clique em um exemplo para ver o trace completo).
 
-- `docs/evaluate_terminal.png` – saída do `python src/evaluate.py` com STATUS APROVADO
-- `docs/experiment_dashboard.png` – experimento no LangSmith com as 5 notas
-- `docs/tracing_*.png` – tracing detalhado de pelo menos 3 exemplos
+**Saída do `python src/evaluate.py` (execução final):**
+
+![Terminal com STATUS APROVADO](docs/evaluate_terminal.png)
+
+**Experimentos no dataset de avaliação** (#5 = v1 original, #4 = execução final do v2, #3 = iteração 1, #2 e #1 = tentativas que falharam por cota/crédito):
+
+![Experimentos do dataset](docs/dataset_experiments.png)
+
+**Experimento final do v2 – notas por exemplo:**
+
+![Experimento final](docs/experiment_dashboard.png)
+
+**Tracing detalhado (feedback, input, output e referência):**
+
+| Simples (botão do carrinho) | Médio (desconto no pipeline) | Complexo (checkout com 4 falhas) |
+|---|---|---|
+| ![Trace simples](docs/tracing_1_simples.png) | ![Trace médio](docs/tracing_2_medio.png) | ![Trace complexo](docs/tracing_3_complexo.png) |
+
+**Chamada ao LLM no exemplo complexo** (system prompt v2 + user prompt com o `{bug_report}` preenchido, tokens e resposta):
+
+![Run do LLM](docs/tracing_4_llm_prompt.png)
 
 ### Comparação v1 × v2
 
