@@ -60,31 +60,73 @@ relevante, mas escreve sempre com foco no valor para o usuário.
 
 ## Resultados Finais
 
-> **Preencher após rodar a avaliação** (ver "Como Executar").
-
-- **Dataset de avaliação público (com os experimentos):** `<link gerado por share_dataset>`
-- **Prompt v2 no Hub:** `https://smith.langchain.com/hub/<seu_handle>/bug_to_user_story_v2`
+- **Dataset de avaliação público (15 exemplos + experimentos e tracing):** https://smith.langchain.com/public/701114c4-0faa-469e-93b7-a3fc8f574542/d
+- **Prompt v2 no Hub (público):** https://smith.langchain.com/hub/eval/bug_to_user_story_v2
+- **Modelos:** provider `google`, `LLM_MODEL=gemma-4-31b-it` e `EVAL_MODEL=gemma-4-31b-it` (temperature 0)
 
 ### Notas da avaliação
 
+Execução final do `python src/evaluate.py` (experimento `eval-bug_to_user_story_v2`, sem nenhum erro de API):
+
+```
+==================================================
+Prompt: eval/bug_to_user_story_v2
+==================================================
+
+Métricas Derivadas:
+  - Helpfulness: 0.99 ✓
+  - Correctness: 0.94 ✓
+
+Métricas Base:
+  - F1-Score: 0.90 ✓
+  - Clarity: 0.99 ✓
+  - Precision: 0.98 ✓
+
+--------------------------------------------------
+📊 MÉDIA GERAL: 0.9632
+--------------------------------------------------
+
+✅ STATUS: APROVADO - Todas as métricas >= 0.8
+```
+
+Notas por exemplo (v2):
+
+| # | Complexidade | F1 | Clarity | Precision |
+|---|---|---|---|---|
+| 1-5 | simples | 0.82 / 0.92 / 0.89 / 0.82 / 0.79 | 0.98 – 1.00 | 0.97 – 1.00 |
+| 6-12 | médio | 0.92 / 1.00 / 0.95 / 0.85 / 0.83 / 0.89 / 0.95 | 0.98 – 1.00 | 0.93 – 1.00 |
+| 13-15 | complexo | 1.00 / 0.95 / 1.00 | 1.00 | 0.93 – 1.00 |
+
+Comparação com o prompt original, avaliado com o mesmo dataset, modelos e métricas:
+
 | Métrica | v1 (original) | v2 (otimizado) |
 |---|---|---|
-| Helpfulness | – | – |
-| Correctness | – | – |
-| F1-Score | – | – |
-| Clarity | – | – |
-| Precision | – | – |
-| **Média** | – | – |
+| Helpfulness | 0.91 | **0.99** |
+| Correctness | 0.88 | **0.94** |
+| F1-Score | 0.86 | **0.90** |
+| Clarity | 0.92 | **0.99** |
+| Precision | 0.91 | **0.98** |
+| **Média** | 0.90 | **0.96** |
+
+> **Observação honesta sobre o juiz:** com o `gemma-4-31b-it` como avaliador, o próprio v1 também ficou acima de 0.8 (o enunciado sugere ~0.5 para ele). Na execução do v1, um exemplo (#9) zerou por erro 503 do Gemini, e não pelo prompt; desconsiderando-o, o F1 do v1 fica em ~0.92, próximo ao do v2. Ou seja: o critério de aprovação foi atingido com folga, mas esse juiz é permissivo e não discrimina bem as duas versões. As maiores diferenças a favor do v2 aparecem em Clarity e Precision (formato padronizado, sem texto fora da user story). Um juiz mais rigoroso (ex: um modelo maior da OpenAI ou Gemini Pro) tende a ampliar essa diferença.
 
 ### Iterações
 
-| # | Mudança | Resultado |
+| # | Configuração | Resultado |
 |---|---|---|
-| 1 | Versão inicial do v2 (Role + Few-shot + CoT + Skeleton) | – |
+| 0 | OpenAI (`gpt-4.1-mini` / `gpt-4.1`) | Falhou: conta sem créditos (HTTP 429 `insufficient_quota`); todas as notas 0.00 |
+| 0b | Gemini `gemini-3.5-flash` | Abortado: o plano gratuito permite 20 requisições/dia por modelo, e uma avaliação faz 60 (15 respostas + 45 julgamentos) |
+| 1 | `gemma-4-31b-it` + v2 inicial (Role + Few-shot + CoT + Skeleton) | **Aprovado**, média 0.87. Dois exemplos zeraram por erro 500 do servidor do Gemini (não pelo prompt) |
+| 2 | Mesma configuração, nova execução | **Aprovado**, média **0.96**, sem erros |
+| — | Baseline v1 (`leonanluppi/bug_to_user_story_v1`) | Média 0.90 (com um exemplo zerado por erro 503) |
+
+Na fase de construção, um ajuste foi necessário antes da primeira execução: o validador do projeto (`validate_prompt_structure`) acusa qualquer ocorrência de `TODO`, incluindo a palavra "TODOS" em maiúsculas; a frase foi reescrita.
+
+Os logs completos de cada execução ficam em `results/` (ignorado pelo git).
 
 ### Screenshots
 
-Salve em `docs/` (a pasta `screenshots/` está no `.gitignore`):
+Todos os experimentos e o tracing de cada exemplo podem ser abertos pelo [link público do dataset](https://smith.langchain.com/public/701114c4-0faa-469e-93b7-a3fc8f574542/d) (aba *Experiments*; clique em um exemplo para ver o trace completo).
 
 - `docs/evaluate_terminal.png` – saída do `python src/evaluate.py` com STATUS APROVADO
 - `docs/experiment_dashboard.png` – experimento no LangSmith com as 5 notas

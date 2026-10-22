@@ -32,11 +32,22 @@ DICAS DE IMPLEMENTAÇÃO:
 import os
 import sys
 from pathlib import Path
+import yaml
 from dotenv import load_dotenv
 from langsmith import Client
 from utils import save_yaml, check_env_vars, print_section_header
 
 load_dotenv()
+
+
+def _str_presenter(dumper, data):
+    """Grava textos multilinha no estilo bloco (|), mais legível que aspas."""
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+yaml.add_representer(str, _str_presenter)
 
 
 SOURCE_PROMPT = "leonanluppi/bug_to_user_story_v1"
